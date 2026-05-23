@@ -1,0 +1,61 @@
+services:
+  api-go:
+    build:
+      context: ./apps/api-go
+      dockerfile: Dockerfile
+    container_name: mono-api-go
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount source code for hot-reload
+      - ./apps/api-go:/app
+      # Persist Go module cache
+      - go-modules:/go/pkg/mod
+      # Persist Go build cache
+      - go-build-cache:/root/.cache/go-build
+    environment:
+      - GIN_MODE=debug
+      - JWT_SECRET=your-secret-key-change-in-production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=mono_dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mono-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mono-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mono_dev
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - mono-network
+
+volumes:
+  go-modules:
+    name: mono-go-modules
+  go-build-cache:
+    name: mono-go-build-cache
+  postgres-data:
+    name: mono-postgres-data
+
+networks:
+  mono-network:
+    name: mono-network

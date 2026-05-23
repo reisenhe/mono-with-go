@@ -1,0 +1,21 @@
+# Binary
+api-go
+*.exe
+
+# Database
+*.db
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Air hot-reload
+tmp/
+build-errors.log
